@@ -3,6 +3,7 @@ from .models import Book
 from .models import Library
 from django.views.generic import DetailView
 from django.views.generic.detail import DetailView
+from django.contrib.auth import login
 
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
