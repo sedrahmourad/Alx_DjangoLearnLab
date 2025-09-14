@@ -1,20 +1,14 @@
-
----
-
-## 📘 `retrieve.md`
-```markdown
 # Retrieve Operation
 
 ```python
-from book_store.models import Book
+# Open Django shell with: python manage.py shell
 
-# Get the first book from the database
-book = Book.objects.first()
-book.title
-# Expected Output: '1984'
+from bookshelf.models import Book
 
-book.author
-# Expected Output: 'George Orwell'
+# Retrieve the book we created
+book = Book.objects.get(title="1984")
 
-book.publication_year
-# Expected Output: 1949
+# Display its attributes
+print(book.title)   # Expected: 1984
+print(book.author)  # Expected: George Orwell
+print(book.publication_year)  # Expected: 1949
