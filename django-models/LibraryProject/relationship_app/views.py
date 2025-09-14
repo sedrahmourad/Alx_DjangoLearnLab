@@ -5,6 +5,10 @@ from django.views.generic import DetailView
 from django.views.generic.detail import DetailView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import permission_required
+from django.shortcuts import render, redirect
+
+
 
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
@@ -66,3 +70,18 @@ def librarian_view(request):
 @user_passes_test(is_member)
 def member_view(request):
     return render(request, 'relationship_app/member_view.html')
+
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book(request):
+    # logic to add a book
+    pass
+
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book(request, book_id):
+    # logic to edit a book
+    pass
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book(request, book_id):
+    # logic to delete a book
+    pass
