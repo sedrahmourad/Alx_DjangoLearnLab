@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Book
 from .models import Library
 from django.views.generic import DetailView
@@ -6,10 +6,7 @@ from django.views.generic.detail import DetailView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import permission_required
-from django.shortcuts import render, redirect
-
-
-
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -98,3 +95,41 @@ def delete_book(request, book_id):
         book.delete()
         return redirect('list_books')
     return render(request, 'relationship_app/delete_book.html', {'book': book})
+
+@permission_required('relationship_app.can_view', raise_exception=True)
+def book_list(request):
+    """Only users with can_view permission can see this list."""
+    books = Book.objects.all()
+    return render(request, 'books/book_list.html', {'book_list': books})
+
+
+@permission_required('relationship_app.can_create', raise_exception=True)
+def create_book(request):
+    """Only Editors and Admins can create books."""
+    if request.method == "POST":
+        # (simplified example)
+        title = request.POST.get('title')
+        author = request.POST.get('author')
+        year = request.POST.get('publication_year')
+        Book.objects.create(title=title, author=author, publication_year=year)
+        return HttpResponse("Book created!")
+    return render(request, 'books/create_book.html')
+
+
+@permission_required('relationship_app.can_edit', raise_exception=True)
+def edit_book(request, pk):
+    """Only Editors and Admins can edit books."""
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == "POST":
+        book.title = request.POST.get('title', book.title)
+        book.save()
+        return HttpResponse("Book updated!")
+    return render(request, 'books/edit_book.html', {'book': book})
+
+
+@permission_required('relationship_app.can_delete', raise_exception=True)
+def delete_book(request, pk):
+    """Only Admins can delete books."""
+    book = get_object_or_404(Book, pk=pk)
+    book.delete()
+    return HttpResponse("Book deleted!")
