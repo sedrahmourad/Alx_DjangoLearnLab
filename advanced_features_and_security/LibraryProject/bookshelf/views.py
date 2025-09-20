@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import permission_required
 from .models import Book
 from django.db import connection 
 from .forms import BookSearchForm
-
+from .forms import ExampleForm
 
 # Create your views here.
 
