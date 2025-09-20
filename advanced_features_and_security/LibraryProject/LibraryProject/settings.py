@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f9vn$%b8dz62)owavuzc(f-#p+%k5(g4q%mpjgtv(1^!@&6!jx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
 
 
 # Application definition
@@ -51,6 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+     # CSP middleware (if you install django-csp)
+    "csp.middleware.CSPMiddleware",
+    # ... any other middleware ...
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
@@ -126,3 +131,51 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Use secure cookies so cookies are only sent over HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Prevent JavaScript from accessing the session cookie via document.cookie in some browsers
+# (Note: HttpOnly is default for session cookie in Django)
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # keep False if you need client-side JS read access; generally OK to stay False
+
+# Browser security headers
+SECURE_BROWSER_XSS_FILTER = True  # sets X-XSS-Protection header
+SECURE_CONTENT_TYPE_NOSNIFF = True  # sets X-Content-Type-Options: nosniff
+X_FRAME_OPTIONS = "DENY"  # prevents clickjacking via frames
+
+# HSTS - enforce HTTPS. Use with care; test before enabling widely.
+SECURE_SSL_REDIRECT = True  # redirect HTTP -> HTTPS (set True in production)
+SECURE_HSTS_SECONDS = 60  # gradually increase in production (start low for testing)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = False  # only enable after validation
+
+# Referrer policy (optional)
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
+
+# Content Security Policy — option 1: using django-csp (recommended)
+# Install via: pip install django-csp
+
+# Minimal CSP policies — tune to your assets and allowed domains
+# These are conservative defaults: allow same-origin resources and restrict external scripts/styles
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)  # add external script hosts only if necessary
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")  # avoid 'unsafe-inline' if possible; use hashes or nonces
+CSP_IMG_SRC = ("'self'", "data:")  # add cdn domains if you use them
+CSP_FONT_SRC = ("'self'", "data:")
+CSP_CONNECT_SRC = ("'self'",)  # for AJAX/WS; add API domains if used
+CSP_FRAME_ANCESTORS = ("'none'",)  # enforce X-FRAME-OPTIONS in CSP as well
+
+# If you cannot use django-csp, see the example below to set header manually in views/middleware.
+
+# Logging security important events (example)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {"handlers": ["console"], "level": "WARNING"},
+}

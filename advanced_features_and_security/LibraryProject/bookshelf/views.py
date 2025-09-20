@@ -3,15 +3,31 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
 from .models import Book
+from django.db import connection 
+from .forms import BookSearchForm
+
 
 # Create your views here.
 
 
 @permission_required('relationship_app.can_view', raise_exception=True)
 def book_list(request):
-    """Only users with can_view permission can see this list."""
+    """
+    Only users with can_view permission can see this list.
+    Optionally allows searching books by title/author safely.
+    """
+    form = BookSearchForm(request.GET or None)
     books = Book.objects.all()
-    return render(request, 'books/book_list.html', {'book_list': books})
+
+    if form.is_valid():  # input is validated
+        q = form.cleaned_data.get("q")
+        if q:
+            books = books.filter(title__icontains=q) | books.filter(author__icontains=q)
+
+    return render(request, 'books/book_list.html', {
+        'book_list': books,
+        'form': form
+    })
 
 
 @permission_required('relationship_app.can_create', raise_exception=True)
@@ -45,3 +61,14 @@ def delete_book(request, pk):
     book.delete()
     return HttpResponse("Book deleted!")
 
+# Example of avoiding raw SQL. If you absolutely must use raw(), use paramization:
+def dangerous_example_need_raw(request):
+    # BAD: never format user input into SQL
+    # safe way:
+    user_q = request.GET.get("q", "")
+    if user_q:
+        # Use ORM or parameterized raw query
+        qs = Book.objects.raw("SELECT * FROM bookshelf_book WHERE title LIKE %s", [f"%{user_q}%"])
+    else:
+        qs = Book.objects.none()
+    return render(request, "bookshelf/book_list.html", {"books": qs})

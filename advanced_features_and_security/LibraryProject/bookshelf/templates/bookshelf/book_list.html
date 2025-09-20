@@ -1,0 +1,22 @@
+{# book_list.html #}
+{% extends "base.html" %}
+{% block content %}
+  <h1>Books</h1>
+
+  <form method="get" action="">
+    {{ form.q.label_tag }}
+    {{ form.q }}
+    <button type="submit">Search</button>
+  </form>
+
+  <ul>
+    {% for book in books %}
+      <li>
+        <!-- default autoescape prevents XSS. Do NOT use |safe on untrusted content -->
+        <strong>{{ book.title }}</strong> — {{ book.author }}
+      </li>
+    {% empty %}
+      <li>No books found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

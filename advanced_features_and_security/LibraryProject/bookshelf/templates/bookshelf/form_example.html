@@ -1,0 +1,12 @@
+{# form_example.html #}
+{% extends "base.html" %}
+{% block content %}
+  <h2>Example form (secured with CSRF)</h2>
+  <form method="post" action="{% url 'bookshelf:submit_form' %}">
+    {% csrf_token %}
+    <!-- Example input: always escape user-provided data on output (default Django autoescape) -->
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" maxlength="255" required>
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}
