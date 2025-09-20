@@ -179,3 +179,32 @@ LOGGING = {
     },
     "root": {"handlers": ["console"], "level": "WARNING"},
 }
+
+# --- HTTPS & Secure Redirects Settings ---
+
+# Redirect all HTTP traffic to HTTPS
+SECURE_SSL_REDIRECT = True  # Must be True in production
+
+# HTTP Strict Transport Security (HSTS) - tell browsers to only use HTTPS
+SECURE_HSTS_SECONDS = 31536000  # 1 year (in seconds)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # apply to all subdomains
+SECURE_HSTS_PRELOAD = True  # allows site to be included in browser preload lists
+
+# --- Secure Cookies ---
+SESSION_COOKIE_SECURE = True  # session cookies sent only over HTTPS
+CSRF_COOKIE_SECURE = True     # CSRF cookies sent only over HTTPS
+
+# --- Security Headers ---
+X_FRAME_OPTIONS = "DENY"             # Prevent clickjacking
+SECURE_CONTENT_TYPE_NOSNIFF = True   # Prevent MIME sniffing
+SECURE_BROWSER_XSS_FILTER = True     # Enable basic XSS protection
+
+DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
