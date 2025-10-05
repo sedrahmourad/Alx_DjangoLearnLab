@@ -13,9 +13,13 @@ urlpatterns = [
     # Post detail (already exists)
     path("posts/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
 
-    # Comment URLs
-   path('posts/<int:post_id>/comments/new/', CommentCreateView.as_view(), name='comment_create'),
-    path('comments/<int:pk>/edit/', CommentUpdateView.as_view(), name='comment_edit'),
-    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
+    # ✅ Create a new comment for a post
+    path("post/<int:pk>/comments/new/", CommentCreateView.as_view(), name="comment_create"),
+
+    # ✅ Update an existing comment
+    path("comment/<int:pk>/update/", CommentUpdateView.as_view(), name="comment_update"),
+
+    # ✅ Delete a comment
+    path("comment/<int:pk>/delete/", CommentDeleteView.as_view(), name="comment_delete"),
 ]
-]
+
