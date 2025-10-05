@@ -44,49 +44,43 @@ def profile(request):
     context = {"u_form": u_form, "p_form": p_form}
     return render(request, "blog/profile.html", context)
 
-@login_required
-def add_comment(request, post_id):
-    """Add a new comment to a post"""
-    post = get_object_or_404(Post, id=post_id)
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            messages.success(request, "Your comment was posted.")
-            return redirect("post_detail", pk=post.id)
-    else:
-        form = CommentForm()
-    return render(request, "blog/comment_form.html", {"form": form})
-
-
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """Edit a comment (only by the author)"""
+class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentForm
-    template_name = "blog/comment_form.html"
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
     def form_valid(self, form):
-        messages.success(self.request, "Comment updated.")
+        # Attach the logged-in user as the comment author
+        form.instance.author = self.request.user
+        # Attach the comment to the correct post
+        post = get_object_or_404(Post, id=self.kwargs['post_id'])
+        form.instance.post = post
         return super().form_valid(form)
 
     def get_success_url(self):
-        return self.object.post.get_absolute_url()
+        # Redirect back to the blog post detail page after commenting
+        return reverse('post_detail', kwargs={'pk': self.kwargs['post_id']})
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+
+    def get_success_url(self):
+        return reverse('post_detail', kwargs={'pk': self.object.post.id})
+
+    def test_func(self):
+        # Only the comment author can edit
+        comment = self.get_object()
+        return self.request.user == comment.author
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Delete a comment (only by the author)"""
     model = Comment
-    template_name = "blog/comment_confirm_delete.html"
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        messages.success(self.request, "Comment deleted.")
-        return reverse_lazy("post_detail", kwargs={"pk": self.object.post.pk})
+        return reverse('post_detail', kwargs={'pk': self.object.post.id})
+
+    def test_func(self):
+        # Only the comment author can delete
+        comment = self.get_object()
+        return self.request.user == comment.author
