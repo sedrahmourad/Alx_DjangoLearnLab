@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Post
-from .forms import CustomUserCreationForm, UserUpdateForm, ProfileUpdateForm,
+from .forms import CustomUserCreationForm, UserUpdateForm, ProfileUpdateForm, CommentForm, PostForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
 from django.urls import reverse_lazy
+from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import UpdateView, DeleteView
-from .models import Post, Comment
-from .forms import CommentForm
+from django.views.generic import UpdateView, DeleteView, CreateView
+from .models import Post, Comment, Tag
+from django.db.models import Q 
 # Create your views here.
 
 def home(request):
@@ -84,3 +85,23 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         # Only the comment author can delete
         comment = self.get_object()
         return self.request.user == comment.author
+
+def posts_by_tag(request, tag_slug):
+    tag = get_object_or_404(Tag, slug=tag_slug)
+    posts = tag.posts.select_related("author").all()
+    context = {"tag": tag, "posts": posts}
+    return render(request, "blog/posts_by_tag.html", context)
+
+def search_posts(request):
+    query = request.GET.get("q", "").strip()
+    posts = Post.objects.none()
+    if query:
+        # search title, content and tag names
+        posts = Post.objects.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct().select_related("author")
+    context = {"query": query, "posts": posts}
+    return render(request, "blog/search_results.html", context)
+
