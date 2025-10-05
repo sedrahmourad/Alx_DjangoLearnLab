@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.text import slugify
+from taggit.managers import TaggableManager
 
 # Create your models here.
 
@@ -36,8 +37,7 @@ class Post(models.Model):
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     published_date = models.DateTimeField(auto_now_add=True)
-    # NEW:
-    tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
+    tags = TaggableManager()
 
     def __str__(self):
         return self.title
