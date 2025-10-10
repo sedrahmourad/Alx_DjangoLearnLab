@@ -4,7 +4,7 @@ from django.shortcuts import render
 # posts/views.py
 
 from rest_framework import viewsets, permissions
-from .models import Post, Comments
+from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
 # --- Post ViewSet ---
@@ -28,7 +28,7 @@ class PostViewSet(viewsets.ModelViewSet):
 # --- Comment ViewSet ---
 class CommentViewSet(viewsets.ModelViewSet):
     # Set of comments the view works with
-    queryset = Comments.objects.all().order_by('-created_at')
+    queryset = Comment.objects.all().order_by('-created_at')
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
